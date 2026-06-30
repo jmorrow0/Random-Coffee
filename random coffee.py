@@ -1,6 +1,7 @@
 import csv
 import random
 import sys
+import datetime
 
 
 class participant:
@@ -32,6 +33,7 @@ class pool:
     def not_matching_from_file(self, filename='month_skip.csv'):
         with open(filename, encoding='utf-8') as file:
             reader = csv.reader(file)
+            next(reader)
             for row in reader:
                 if row != []:
                     self.not_matching.append(int(row[2]))
@@ -39,6 +41,7 @@ class pool:
     def get_participant_info(self, filename='match_history.csv'):
         with open(filename, encoding='utf-8') as file:
             reader = csv.reader(file)
+            next(reader)
             for row in reader:
                 self.participants[int(row[2])] = participant(int(row[2]), row[1], row[0],
                                                              [int(x) for x in row[3:] if x != ''])
@@ -46,7 +49,7 @@ class pool:
                     self.participants[int(row[2])].matching = False
 
     def run_matching(self, email_text, current_match_filename = 'current_matches.csv',
-                     formatted_matches_filename='formatted match.csv'):
+                     formatted_matches_filename='formatted_match.csv'):
         participants = list(self.participants.keys())
         matching_pool = [x for x in participants if self.participants[x].matching]
         ticks = 0
@@ -74,8 +77,12 @@ class pool:
         with open(current_match_filename, mode='w', newline='\n', encoding='utf-8') as current_match_file:
             with open(formatted_matches_filename, mode='w', newline='\n', encoding='utf-8') as formatted_match_file:
                 current_match_writer = csv.writer(current_match_file)
+                current_match_writer.writerow(['ID 1','ID 2','Emails','Email Subject','Email Text'])
 
                 formatted_match_writer = csv.writer(formatted_match_file)
+                now=datetime.datetime.now()
+                month=now.strftime('%B %Y')
+                formatted_match_writer.writerow([month])
 
                 matches_made = set()
 
@@ -83,7 +90,7 @@ class pool:
                     if self.participants[part].new_match == None:
                         formatted_match_writer.writerow([part, ''])
                     else:
-                        formatted_match_writer.writerow([part, self.participants[part].new_match])
+                        formatted_match_writer.writerow([self.participants[part].new_match])
                         if part not in matches_made:
                             p1 = self.participants[part]
                             p2 = self.participants[self.participants[part].new_match]
